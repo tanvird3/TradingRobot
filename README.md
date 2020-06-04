@@ -8,12 +8,12 @@ it goes long. The Stop Loss is set at the lower band of 4 standard deviation Bol
 middle band.
 
 2. If the Bid price is within upper bands of 1 and 2 standard deviation Bollinger Bands and the MACD line is below the MACD
-Signal Line it goes short. The Stop Loss is set at the upper band of 4 standard deviation Bollinger Band. Take Profit is set 
+Signal Line it goes short. The Stop Loss is set at the upper band of 4 standard deviation Bollinger Bands. Take Profit is set 
 at the middle band. 
 
 3. A currency pair can have only one active positon on a specific timeframe, SuperMao stops you from losing everything too quickly.  
 
 ### Disclaimer
 
-SuperMao is not perfect. It can blow your capital as quickly as 1 week. Unlike many others, the creator of Super Mao takes
-full liability of the shortcomings of his creation. He is working procrastinatingly to make the cat a better hunter. 
+SuperMao is not perfect, don't set it free. It can blow your capital as quickly as 1 week. Unlike many others, the creator of SuperMao takes
+of SuperMao takes full liability. He is working procrastinatingly to make the cat a better hunter. 
