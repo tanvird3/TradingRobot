@@ -8,8 +8,11 @@
 #property version   "2.00"
 #property strict
 #include <openordercheck.mqh>
+#include <TakeProfitStopLoss.mqh>
 
-input string MySymbol = NULL; // provide the symbol
+input string MySymbol = "USDJPY"; // provide the symbol
+input double ProfitTarget = 1;
+input double StopLoss = 5;
 input ENUM_TIMEFRAMES MyTimeFrame = PERIOD_CURRENT; // For per minute, hour or monthly
 input int MyAvgPeriod = 50; // time frame for calculating moving average
 input ENUM_APPLIED_PRICE MyPrice = PRICE_CLOSE; // what price do we want to consider
@@ -20,12 +23,12 @@ input int ThirdBBand = 6;
 input int MacdFast = 24;
 input int MacdSlow = 52;
 input int MacdSignal = 18;
-input string ContUpdate = "NO"; // Should TP & SL Keep Updating Continuously
+input string ContUpdate = "NO"; // Should TP & SL Keep Updating
 
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-int MagicNumber = 9228+Period()+StringGetChar(MySymbol, 0)+StringGetChar(MySymbol, 3); //set the unique number for each comb of currency pair and timeframe
+int MagicNumber = 2000+Period()+StringGetChar(MySymbol, 0)+StringGetChar(MySymbol, 3); //set the unique number for each comb of currency pair and timeframe
 int OrderId;
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
@@ -33,7 +36,7 @@ int OrderId;
 int OnInit()
   {
 //---
-   Alert("You Have Just Awakened SuperMao");
+   Alert("You Have Just Awakened SuperMao_HFT");
 //---
    return(INIT_SUCCEEDED);
   }
@@ -43,7 +46,7 @@ int OnInit()
 void OnDeinit(const int reason)
   {
 //---
-   Alert("SuperMao Is Going Into Hybernation");
+   Alert("SuperMao_HFT Is Going Into Hybernation");
   }
 //+------------------------------------------------------------------+
 //| Expert tick function                                             |
@@ -70,66 +73,41 @@ void OnTick()
    double MACDSIGNAL = iMACD(MySymbol, MyTimeFrame, MacdFast, MacdSlow, MacdSignal, MyPrice, MODE_SIGNAL, 0);
 
 // if there is no order only then a new order would be sent
-   if(!CheckOpenOrder(MagicNumber))
-     {
-      if(Ask >= LBBAND2 && Ask < UBBAND1 && MACDMAIN > MACDSIGNAL) //if price is between lower band 2 and upper band 1 and macd line above macd signal go long
-        {
 
-         Alert("Buy Now at "+ NormalizeDouble(Ask, Digits));
-         Alert("Take Proft at "+ NormalizeDouble(UBBAND1, Digits));
-         Alert("Stop Loss at "+ NormalizeDouble(LBBAND6, Digits));
-         OrderId = OrderSend(MySymbol, OP_BUYLIMIT, LotSize, Ask, 10, NormalizeDouble(LBBAND6, Digits), NormalizeDouble(UBBAND1, Digits), NULL, MagicNumber);
+   if(Ask >= LBBAND2 && Ask < UBBAND1 && MACDMAIN > MACDSIGNAL) //if price is between lower band 2 and upper band 1 and macd line above macd signal go long
+     {
+      double TPL = TPLong(MySymbol, LotSize, ProfitTarget);
+      TPL = MathMin(TPL, UBBAND1);
+
+      double SLL = SLLong(MySymbol, LotSize, StopLoss);
+      SLL = MathMax(SLL, LBBAND6);
+
+      Alert("Buy Now at "+ NormalizeDouble(Ask, Digits));
+      Alert("Take Proft at "+ NormalizeDouble(TPL, Digits));
+      Alert("Stop Loss at "+ NormalizeDouble(SLL, Digits));
+      OrderId = OrderSend(MySymbol, OP_BUYLIMIT, LotSize, Ask, 10, NormalizeDouble(SLL, Digits), NormalizeDouble(TPL, Digits), NULL, MagicNumber);
+      if(OrderId < 0)
+         Alert("The Order Could Not Be Sent, ErrorCode: " + GetLastError());
+     }
+   else
+      if(Bid <= UBBAND2 && Bid > LBBAND1 && MACDMAIN < MACDSIGNAL) //if price is between upper band 2 and lower band 1 and macd below signal go short
+        {
+         double TPS = TPShort(MySymbol, LotSize, ProfitTarget);
+         TPS = MathMax(TPS, LBBAND1);
+
+         double SLS = SLShort(MySymbol, LotSize, StopLoss);
+         SLS = MathMin(SLS, UBBAND6);
+
+         Alert("Sell Now at "+ NormalizeDouble(Bid, Digits));
+         Alert("Take Proft at "+ NormalizeDouble(LBBAND1, Digits));
+         Alert("Stop Loss at "+ NormalizeDouble(UBBAND6, Digits));
+         OrderId = OrderSend(MySymbol, OP_SELLLIMIT, LotSize, Bid, 10, NormalizeDouble(SLS, Digits), NormalizeDouble(TPS, Digits), NULL, MagicNumber);
          if(OrderId < 0)
             Alert("The Order Could Not Be Sent, ErrorCode: " + GetLastError());
         }
-      else
-         if(Bid <= UBBAND2 && Bid > LBBAND1 && MACDMAIN < MACDSIGNAL) //if price is between upper band 2 and lower band 1 and macd below signal go short
-           {
-            Alert("Sell Now at "+ NormalizeDouble(Bid, Digits));
-            Alert("Take Proft at "+ NormalizeDouble(LBBAND1, Digits));
-            Alert("Stop Loss at "+ NormalizeDouble(UBBAND6, Digits));
-            OrderId = OrderSend(MySymbol, OP_SELLLIMIT, LotSize, Bid, 10, NormalizeDouble(UBBAND6, Digits), NormalizeDouble(LBBAND1, Digits), NULL, MagicNumber);
-            if(OrderId < 0)
-               Alert("The Order Could Not Be Sent, ErrorCode: " + GetLastError());
-           }
-      /*else
-        {
-         Alert("Hold Your Nerve");
-        }*/
-     }
-   else // if an order has already been placed
+   /*else
      {
-      if(ContUpdate=="Yes")
-        {
-         if(OrderSelect(OrderId, SELECT_BY_TICKET)==true) // check if extracting data is possible
-           {
-            int orderType = OrderType(); // check the ordertype, 0 = long, 1 = short
-            double UpdatedTakeProfit;
-            if(orderType == 0)
-              {
-               UpdatedTakeProfit = NormalizeDouble(UBBAND1, Digits); // modify the take profit for long position
-              }
-            else
-              {
-               UpdatedTakeProfit = NormalizeDouble(LBBAND1, Digits); // modify the take profit for short position
-              }
-            double TP = OrderTakeProfit();
-            double OpenPrice = OrderOpenPrice();
-            double TPdistance = MathAbs(TP - UpdatedTakeProfit);
-            if((orderType ==0 && TP!=UpdatedTakeProfit && UpdatedTakeProfit > OpenPrice && TPdistance >= .0001) || (orderType ==1 && TP!=UpdatedTakeProfit && UpdatedTakeProfit < OpenPrice && TPdistance >= .0001)) // if the currect take profit is not equal to the updated take profit by at least a pip
-              {
-               bool ModifySuccess = OrderModify(OrderId, OrderOpenPrice(), OrderStopLoss(), UpdatedTakeProfit, 0);
-               if(ModifySuccess == true)
-                 {
-                  Print("Order modified: ",OrderId);
-                 }
-               else
-                 {
-                  Print("Unable to modify order: ",OrderId);
-                 }
-              }
-           }
-        }
-     }
+      Alert("Hold Your Nerve");
+     }*/
   }
 //+------------------------------------------------------------------+
