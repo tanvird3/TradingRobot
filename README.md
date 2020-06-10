@@ -15,7 +15,6 @@ at the lowr band of the 1 standard deviation Bollinger Bands.
 
 ### Disclaimer
 
-SuperMao is not perfect, don't set it free. It can blow your capital as quickly as 1 week. Unlike many others, the creator of SuperMao takes
-of SuperMao takes full liability. He is working procrastinatingly to make the cat a better hunter. 
+SuperMao is not perfect, don't set it free. It can blow your capital as quickly as 1 week. Don't blame the cat, blame the creator. However, he is working procrastinatingly to make the cat a better hunter. 
 
 According to the back-test run on the previous 6-month data, SuperMao has a success rate of over 90%. 
