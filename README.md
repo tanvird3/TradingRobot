@@ -18,3 +18,4 @@ at the lowr band of the 1 standard deviation Bollinger Bands.
 SuperMao is not perfect, don't set it free. It can blow your capital as quickly as 1 week. Don't blame the cat, blame the creator. However, he is working procrastinatingly to make the cat a better hunter. 
 
 According to the back-test run on the previous 6-month data, SuperMao has a success rate of over 90%. 
+https://user-images.githubusercontent.com/8532244/85926007-09723c80-b8be-11ea-8d90-d9ed6b5c6a80.PNG
