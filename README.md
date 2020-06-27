@@ -1,6 +1,6 @@
 # Trading Bot SuperMao
 
-SuperMao is a trading bot named after my imaginary cat. It trades on Meta Trader trading platform. It takes into account
+SuperMao is a trading bot named after my imaginary cat. It trades on MetaTrader trading platform. It takes into account
 the following things before taking any position-
 
 1. If the Ask price is within lower band of 2 standard deviation and upper band 1 standard deviation Bollinger Bands and the MACD line is above the MACD signal line,
